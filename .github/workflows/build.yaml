@@ -24,10 +24,16 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Install rcedit with Wine
+        run: |
+          sudo apt-get update && sudo apt-get install -y wine
+          wget https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe
+          echo 'wine rcedit-x64.exe "$@"' > rcedit
+          chmod +x rcedit
+          sudo mv rcedit /usr/local/bin/
       - uses: actions/checkout@v4
         with:
           lfs: true
-
       - id: export
         uses: firebelley/godot-export@v6.0.0
         with:
