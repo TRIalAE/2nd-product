@@ -11,12 +11,22 @@ config_version=5
 [application]
 
 config/name="SecondProduct"
-config/features=PackedStringArray("4.4", "GL Compatibility")
+run/main_scene="uid://dg3u8x28mq5gx"
+config/features=PackedStringArray("4.4", "C#", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [dotnet]
 
 project/assembly_name="SecondProduct"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg")
+
+[gdunit4]
+
+settings/test/test_lookup_folder=""
+settings/test/test_discovery=true
 
 [rendering]
 
