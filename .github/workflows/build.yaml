@@ -1,0 +1,45 @@
+name: builder
+run-name: ${{ github.head_ref || github.ref_name }}-builder
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**.yml"
+      - "**.yaml"
+      - "**.md"
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "**.yml"
+      - "**.md"
+  workflow_dispatch:
+
+jobs:
+  export-game:
+    name: "Export Game for All Platforms"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - id: export
+        uses: firebelley/godot-export@v6.0.0
+        with:
+          godot_executable_download_url: https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_mono_linux_x86_64.zip
+          godot_export_templates_download_url: https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_mono_export_templates.tpz
+          relative_project_path: ./
+          archive_output: true
+          use_preset_export_path: true
+          cache: true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: godot-export
+          path: ${{ steps.export.outputs.archive_directory }}/*
+          retention-days: 14

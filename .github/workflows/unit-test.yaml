@@ -1,0 +1,43 @@
+name: ci-pr-example
+run-name: ${{ github.head_ref || github.ref_name }}-ci-pr-example
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**.yml"
+      - "**.yaml"
+      - "**.md"
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "**.yml"
+      - "**.md"
+  workflow_dispatch:
+
+jobs:
+  unit-test:
+    name: "CI Unit Test"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10 # The overall timeout
+    permissions:
+      actions: write
+      checks: write
+      contents: write
+      pull-requests: write
+      statuses: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: MikeSchulze/gdUnit4-action@v1.1.6
+        with:
+          godot-version: "4.4.1"
+          godot-net: true
+          paths: |
+            res://tests/
+          timeout: 5
+          report-name: test_report.xml
