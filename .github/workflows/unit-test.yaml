@@ -1,5 +1,5 @@
-name: ci-pr-example
-run-name: ${{ github.head_ref || github.ref_name }}-ci-pr-example
+name: "CI Unit Test"
+run-name: ${{ github.head_ref || github.ref_name }}-ci-unit-test
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
   unit-test:
     name: "CI Unit Test"
     runs-on: ubuntu-latest
-    timeout-minutes: 10 # The overall timeout
+    timeout-minutes: 10
     permissions:
       actions: write
       checks: write
