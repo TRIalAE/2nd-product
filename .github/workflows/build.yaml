@@ -27,11 +27,21 @@ env:
   PROJECT_PATH: .
 
 jobs:
+  prepare:
+    name: Get godot version
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "GODOT_VERSION=${{ env.GODOT_VERSION }}"
+    outputs:
+      godot-version: ${{ env.GODOT_VERSION }}
+
   export-windows:
     name: Windows Export
+    needs:
+      - prepare
     runs-on: ubuntu-22.04
     container:
-      image: barichello/godot-ci:mono-4.4
+      image: barichello/godot-ci:mono-${{ needs.prepare.outputs.godot-version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -57,9 +67,11 @@ jobs:
 
   export-linux:
     name: Linux Export
+    needs:
+      - prepare
     runs-on: ubuntu-22.04
     container:
-      image: barichello/godot-ci:mono-4.4
+      image: barichello/godot-ci:mono-${{ needs.prepare.outputs.godot-version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -83,9 +95,11 @@ jobs:
 
   export-mac:
     name: Mac Export
+    needs:
+      - prepare
     runs-on: ubuntu-22.04
     container:
-      image: barichello/godot-ci:mono-4.4
+      image: barichello/godot-ci:mono-${{ needs.prepare.outputs.godot-version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
