@@ -57,7 +57,7 @@ jobs:
         run: |
           dotnet build $PROJECT_PATH/${EXPORT_NAME}.csproj -c ExportRelease
           mkdir -p $PROJECT_PATH/.godot/mono
-          cp -r $PROJECT_PATH/bin/ExportRelease/* $PROJECT_PATH/.godot/mono/
+          cp -r $PROJECT_PATH/.godot/mono/temp/bin/ExportRelease/* $PROJECT_PATH/.godot/mono/
       - name: Windows Build
         run: |
           mkdir -v -p build/windows
@@ -90,7 +90,7 @@ jobs:
         run: |
           dotnet build $PROJECT_PATH/${EXPORT_NAME}.csproj -c ExportRelease
           mkdir -p $PROJECT_PATH/.godot/mono
-          cp -r $PROJECT_PATH/bin/ExportRelease/* $PROJECT_PATH/.godot/mono/
+          cp -r $PROJECT_PATH/.godot/mono/temp/bin/ExportRelease/* $PROJECT_PATH/.godot/mono/
       - name: Linux Build
         run: |
           mkdir -v -p build/linux
@@ -123,7 +123,7 @@ jobs:
         run: |
           dotnet build $PROJECT_PATH/${EXPORT_NAME}.csproj -c ExportRelease
           mkdir -p $PROJECT_PATH/.godot/mono
-          cp -r $PROJECT_PATH/bin/ExportRelease/* $PROJECT_PATH/.godot/mono/
+          cp -r $PROJECT_PATH/.godot/mono/temp/bin/ExportRelease/* $PROJECT_PATH/.godot/mono/
       - name: Mac Build
         run: |
           mkdir -v -p build/mac
