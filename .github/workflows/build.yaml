@@ -23,7 +23,7 @@ permissions:
 
 env:
   GODOT_VERSION: 4.4
-  EXPORT_NAME: SecondProduct
+  EXPORT_NAME: second_product
   PROJECT_PATH: .
 
 jobs:
@@ -52,12 +52,7 @@ jobs:
           mkdir -v -p ~/.local/share/godot/export_templates/
           mkdir -v -p ~/.config/
           mv /root/.config/godot ~/.config/godot
-          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/templates/
-      - name: Build C# project
-        run: |
-          dotnet build $PROJECT_PATH/${EXPORT_NAME}.csproj -c ExportRelease
-          mkdir -p $PROJECT_PATH/.godot/mono
-          cp -r $PROJECT_PATH/.godot/mono/temp/bin/ExportRelease/* $PROJECT_PATH/.godot/mono/
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
       - name: Windows Build
         run: |
           mkdir -v -p build/windows
