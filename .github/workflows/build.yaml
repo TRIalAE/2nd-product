@@ -14,38 +14,95 @@ on:
       - main
     paths-ignore:
       - "**.yml"
+      - "**.yaml"
       - "**.md"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+env:
+  GODOT_VERSION: 4.4
+  EXPORT_NAME: 2nd-project
+  PROJECT_PATH: .
+
 jobs:
-  export-game:
-    name: "Export Game for All Platforms"
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
+  export-windows:
+    name: Windows Export
+    runs-on: ubuntu-22.04
+    container:
+      image: barichello/godot-ci:mono-${{ env.GODOT_VERSION }}
     steps:
-      - name: Install rcedit with Wine
-        run: |
-          sudo apt-get update && sudo apt-get install -y wine
-          wget https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe
-          echo 'wine rcedit-x64.exe "$@"' > rcedit
-          chmod +x rcedit
-          sudo mv rcedit /usr/local/bin/
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           lfs: true
-      - id: export
-        uses: firebelley/godot-export@v6.0.0
+      - name: Setup
+        run: |
+          mkdir -v -p ~/.local/share/godot/export_templates/
+          mkdir -v -p ~/.config/
+          mv /root/.config/godot ~/.config/godot
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
+      - name: Windows Build
+        run: |
+          mkdir -v -p build/windows
+          EXPORT_DIR="$(readlink -f build)"
+          cd $PROJECT_PATH
+          godot --headless --verbose --export-release "Windows Desktop" "$EXPORT_DIR/windows/$EXPORT_NAME.exe"
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
-          godot_executable_download_url: https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_mono_linux_x86_64.zip
-          godot_export_templates_download_url: https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_mono_export_templates.tpz
-          relative_project_path: ./
-          archive_output: true
-          use_preset_export_path: true
-          cache: true
+          name: windows
+          path: build/windows
 
-      - uses: actions/upload-artifact@v4
+  export-linux:
+    name: Linux Export
+    runs-on: ubuntu-22.04
+    container:
+      image: barichello/godot-ci:mono-${{ env.GODOT_VERSION }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          name: godot-export
-          path: ${{ steps.export.outputs.archive_directory }}/*
-          retention-days: 14
+          lfs: true
+      - name: Setup
+        run: |
+          mkdir -v -p ~/.local/share/godot/export_templates/
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
+      - name: Linux Build
+        run: |
+          mkdir -v -p build/linux
+          EXPORT_DIR="$(readlink -f build)"
+          cd $PROJECT_PATH
+          godot --headless --verbose --export-release "Linux" "$EXPORT_DIR/linux/$EXPORT_NAME.x86_64"
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: build/linux
+
+  export-mac:
+    name: Mac Export
+    runs-on: ubuntu-22.04
+    container:
+      image: barichello/godot-ci:mono-${{ env.GODOT_VERSION }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Setup
+        run: |
+          mkdir -v -p ~/.local/share/godot/export_templates/
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+      - name: Mac Build
+        run: |
+          mkdir -v -p build/mac
+          EXPORT_DIR="$(readlink -f build)"
+          cd $PROJECT_PATH
+          godot --headless --verbose --export-release "macOS" "$EXPORT_DIR/mac/$EXPORT_NAME.zip"
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac
+          path: build/mac
