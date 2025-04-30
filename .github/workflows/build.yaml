@@ -52,7 +52,7 @@ jobs:
           mkdir -v -p ~/.local/share/godot/export_templates/
           mkdir -v -p ~/.config/
           mv /root/.config/godot ~/.config/godot
-          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/templates/
       - name: Build C# project
         run: |
           dotnet build $PROJECT_PATH/${EXPORT_NAME}.csproj -c ExportRelease
@@ -63,75 +63,71 @@ jobs:
           mkdir -v -p build/windows
           EXPORT_DIR="$(readlink -f build)"
           cd $PROJECT_PATH
-          godot --headless --verbose --export-release "Windows Desktop" "$EXPORT_DIR/windows/$EXPORT_NAME.exe"
+          godot --path $PROJECT_PATH --headless --verbose --debug --export-release "Windows Desktop" "$GITHUB_WORKSPACE/build/windows/$EXPORT_NAME.exe"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows
           path: build/windows
 
-  export-linux:
-    name: Linux Export
-    needs:
-      - prepare
-    runs-on: ubuntu-22.04
-    container:
-      image: barichello/godot-ci:mono-${{ needs.prepare.outputs.godot-version }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          lfs: true
-      - name: Setup
-        run: |
-          mkdir -v -p ~/.local/share/godot/export_templates/
-          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
-      - name: Build C# project
-        run: |
-          dotnet build $PROJECT_PATH/${EXPORT_NAME}.csproj -c ExportRelease
-          mkdir -p $PROJECT_PATH/.godot/mono
-          cp -r $PROJECT_PATH/.godot/mono/temp/bin/ExportRelease/* $PROJECT_PATH/.godot/mono/
-      - name: Linux Build
-        run: |
-          mkdir -v -p build/linux
-          EXPORT_DIR="$(readlink -f build)"
-          cd $PROJECT_PATH
-          godot --headless --verbose --export-release "Linux" "$EXPORT_DIR/linux/$EXPORT_NAME.x86_64"
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux
-          path: build/linux
+  # export-linux:
+  #   name: Linux Export
+  #   needs:
+  #     - prepare
+  #   runs-on: ubuntu-22.04
+  #   container:
+  #     image: barichello/godot-ci:mono-${{ needs.prepare.outputs.godot-version }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #       with:
+  #         lfs: true
+  #     - name: Setup
+  #       run: |
+  #         mkdir -v -p ~/.local/share/godot/export_templates/
+  #         mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
+  #     - name: Build C# project
+  #       run: |
+  #         dotnet build $PROJECT_PATH/${EXPORT_NAME}.csproj -c ExportRelease --output $PROJECT_PATH/.godot/mono
+  #     - name: Linux Build
+  #       run: |
+  #         mkdir -v -p build/linux
+  #         EXPORT_DIR="$(readlink -f build)"
+  #         cd $PROJECT_PATH
+  #         godot --headless --verbose --export-release "Linux" "$EXPORT_DIR/linux/$EXPORT_NAME.x86_64"
+  #     - name: Upload Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: linux
+  #         path: build/linux
 
-  export-mac:
-    name: Mac Export
-    needs:
-      - prepare
-    runs-on: ubuntu-22.04
-    container:
-      image: barichello/godot-ci:mono-${{ needs.prepare.outputs.godot-version }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          lfs: true
-      - name: Setup
-        run: |
-          mkdir -v -p ~/.local/share/godot/export_templates/
-          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
-      - name: Build C# project
-        run: |
-          dotnet build $PROJECT_PATH/${EXPORT_NAME}.csproj -c ExportRelease
-          mkdir -p $PROJECT_PATH/.godot/mono
-          cp -r $PROJECT_PATH/.godot/mono/temp/bin/ExportRelease/* $PROJECT_PATH/.godot/mono/
-      - name: Mac Build
-        run: |
-          mkdir -v -p build/mac
-          EXPORT_DIR="$(readlink -f build)"
-          cd $PROJECT_PATH
-          godot --headless --verbose --export-release "macOS" "$EXPORT_DIR/mac/$EXPORT_NAME.zip"
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mac
-          path: build/mac
+  # export-mac:
+  #   name: Mac Export
+  #   needs:
+  #     - prepare
+  #   runs-on: ubuntu-22.04
+  #   container:
+  #     image: barichello/godot-ci:mono-${{ needs.prepare.outputs.godot-version }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #       with:
+  #         lfs: true
+  #     - name: Setup
+  #       run: |
+  #         mkdir -v -p ~/.local/share/godot/export_templates/
+  #         mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
+  #     - name: Build C# project
+  #       run: |
+  #         dotnet build $PROJECT_PATH/${EXPORT_NAME}.csproj -c ExportRelease --output $PROJECT_PATH/.godot/mono
+  #     - name: Mac Build
+  #       run: |
+  #         mkdir -v -p build/mac
+  #         EXPORT_DIR="$(readlink -f build)"
+  #         cd $PROJECT_PATH
+  #         godot --headless --verbose --export-release "macOS" "$EXPORT_DIR/mac/$EXPORT_NAME.zip"
+  #     - name: Upload Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: mac
+  #         path: build/mac
