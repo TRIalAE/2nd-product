@@ -53,6 +53,11 @@ jobs:
           mkdir -v -p ~/.config/
           mv /root/.config/godot ~/.config/godot
           mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
+      - name: Build C# project
+        run: &build-c-sharp |
+          dotnet build $PROJECT_PATH/MyProject.csproj -c ExportRelease
+          mkdir -p $PROJECT_PATH/.godot/mono
+          cp -r $PROJECT_PATH/bin/ExportRelease/* $PROJECT_PATH/.godot/mono/
       - name: Windows Build
         run: |
           mkdir -v -p build/windows
@@ -81,6 +86,8 @@ jobs:
         run: |
           mkdir -v -p ~/.local/share/godot/export_templates/
           mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
+      - name: Build C# project
+        run: *build-c-sharp
       - name: Linux Build
         run: |
           mkdir -v -p build/linux
@@ -109,6 +116,8 @@ jobs:
         run: |
           mkdir -v -p ~/.local/share/godot/export_templates/
           mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
+      - name: Build C# project
+        run: *build-c-sharp
       - name: Mac Build
         run: |
           mkdir -v -p build/mac
