@@ -10,6 +10,6 @@ public partial class BackGround : ParallaxBackground
 
 	public override void _Process(double delta)
 	{
-		ScrollOffset += new Vector2((float)(ScrollSpeed * delta * -1), 0); 
+		ScrollOffset += new Vector2((float)(ScrollSpeed * delta * -1), 0);
 	}
 }
