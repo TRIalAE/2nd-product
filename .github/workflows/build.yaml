@@ -22,107 +22,58 @@ permissions:
   contents: read
 
 env:
-  GODOT_VERSION: 4.4
+  DOTNET_VERSION: 8.x
+  GODOT_VERSION: 4.4.1
+  GODOT_URL: "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64.zip"
+  TEMPLATES_URL: "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_export_templates.tpz"
   EXPORT_NAME: second_product
   PROJECT_PATH: .
 
 jobs:
-  prepare:
-    name: Get godot version
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "GODOT_VERSION=${{ env.GODOT_VERSION }}"
-    outputs:
-      godot-version: ${{ env.GODOT_VERSION }}
-
-  export-windows:
-    name: Windows Export
-    needs:
-      - prepare
-    runs-on: ubuntu-22.04
-    container:
-      image: barichello/godot-ci:mono-${{ needs.prepare.outputs.godot-version }}
+  export:
+    name: ${{ matrix.os }} Export
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      DOTNET_NOLOGO: true
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           lfs: true
-      - name: Setup
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - uses: chickensoft-games/setup-godot@v2
+        name: Setup Godot
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          use-dotnet: true
+          include-templates: true
+      - name: Verify Setup
         run: |
-          mkdir -v -p ~/.local/share/godot/export_templates/
-          mkdir -v -p ~/.config/
-          mv /root/.config/godot ~/.config/godot
-          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
-      - name: Windows Build
+          dotnet --version
+          godot --version
+      - name: Generate .NET Bindings
+        run: godot --headless --build-solutions --quit || exit 0
+      - name: Build Projects
+        run: dotnet build
+      - name: Export Project
         run: |
-          mkdir -v -p build/windows
+          mkdir -v -p build/${{ matrix.platform }}
           EXPORT_DIR="$(readlink -f build)"
           cd $PROJECT_PATH
-          godot --headless --verbose --export-release "Windows Desktop" "$EXPORT_DIR/windows/$EXPORT_NAME.exe"
+          godot --headless --export-release "${{ matrix.platform }}" "${EXPORT_DIR}/${{ matrix.platform }}/${EXPORT_NAME}.exe"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows
-          path: build/windows
-
-  # export-linux:
-  #   name: Linux Export
-  #   needs:
-  #     - prepare
-  #   runs-on: ubuntu-22.04
-  #   container:
-  #     image: barichello/godot-ci:mono-${{ needs.prepare.outputs.godot-version }}
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #       with:
-  #         lfs: true
-  #     - name: Setup
-  #       run: |
-  #         mkdir -v -p ~/.local/share/godot/export_templates/
-  #         mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
-  #     - name: Build C# project
-  #       run: |
-  #         dotnet build $PROJECT_PATH/${EXPORT_NAME}.csproj -c ExportRelease --output $PROJECT_PATH/.godot/mono
-  #     - name: Linux Build
-  #       run: |
-  #         mkdir -v -p build/linux
-  #         EXPORT_DIR="$(readlink -f build)"
-  #         cd $PROJECT_PATH
-  #         godot --headless --verbose --export-release "Linux" "$EXPORT_DIR/linux/$EXPORT_NAME.x86_64"
-  #     - name: Upload Artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: linux
-  #         path: build/linux
-
-  # export-mac:
-  #   name: Mac Export
-  #   needs:
-  #     - prepare
-  #   runs-on: ubuntu-22.04
-  #   container:
-  #     image: barichello/godot-ci:mono-${{ needs.prepare.outputs.godot-version }}
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #       with:
-  #         lfs: true
-  #     - name: Setup
-  #       run: |
-  #         mkdir -v -p ~/.local/share/godot/export_templates/
-  #         mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
-  #     - name: Build C# project
-  #       run: |
-  #         dotnet build $PROJECT_PATH/${EXPORT_NAME}.csproj -c ExportRelease --output $PROJECT_PATH/.godot/mono
-  #     - name: Mac Build
-  #       run: |
-  #         mkdir -v -p build/mac
-  #         EXPORT_DIR="$(readlink -f build)"
-  #         cd $PROJECT_PATH
-  #         godot --headless --verbose --export-release "macOS" "$EXPORT_DIR/mac/$EXPORT_NAME.zip"
-  #     - name: Upload Artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: mac
-  #         path: build/mac
+          name: ${{ matrix.os }}
+          path: build/${{ matrix.os }}
