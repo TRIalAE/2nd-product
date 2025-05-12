@@ -22,67 +22,52 @@ permissions:
   contents: read
 
 env:
-  DOTNET_VERSION: 8.x
-  GODOT_VERSION: 4.4.1
-  GODOT_URL: "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64.zip"
-  TEMPLATES_URL: "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_export_templates.tpz"
+  GODOT_VERSION: 4.4
   EXPORT_NAME: second_product
   PROJECT_PATH: .
 
 jobs:
+  prepare:
+    name: Get godot version
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "GODOT_VERSION=${{ env.GODOT_VERSION }}"
+    outputs:
+      godot-version: ${{ env.GODOT_VERSION }}
+
   export:
-    name: ${{ matrix.os }} Export
-    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.platform }} Export
+    needs: prepare
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:mono-${{ needs.prepare.outputs.godot-version }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
-            platform: "linux"
+          - platform: "linux"
             extension: ""
-          - os: macos-latest
-            platform: "macos"
+          - platform: "macos"
             extension: ".zip"
-          - os: windows-latest
-            platform: "windows"
+          - platform: "windows"
             extension: ".exe"
-    env:
-      DOTNET_CLI_TELEMETRY_OPTOUT: true
-      DOTNET_NOLOGO: true
-    defaults:
-      run:
-        shell: bash
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           lfs: true
       - name: Remove GDUnit4
+        # Since running in headless mode causes a segmentation fault
         run: |
           if [ -d addons/gdUnit4 ]; then
             rm -rf addons/gdUnit4
           fi
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      - uses: chickensoft-games/setup-godot@v2
-        name: Setup Godot
-        with:
-          version: ${{ env.GODOT_VERSION }}
-          use-dotnet: true
-          include-templates: true
-      - name: Verify Setup
+      - name: Setup
         run: |
-          dotnet --version
-          godot --version
-      - name: Initial Project Setup
-        run: |
-          godot --headless --editor --quit
-      - name: Generate .NET Bindings
-        run: godot --headless --build-solutions --quit || exit 0
-      - name: Build Projects
-        run: dotnet build
+          mkdir -v -p ~/.local/share/godot/export_templates/
+          mkdir -v -p ~/.config/
+          mv /root/.config/godot ~/.config/godot
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
       - name: Export Project
         run: |
           mkdir -v -p build/${{ matrix.platform }}
