@@ -68,6 +68,8 @@ jobs:
           mkdir -v -p ~/.config/
           mv /root/.config/godot ~/.config/godot
           mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
+      - name: Initial Project Setup
+        run: godot --headless --build-solutions --quit || exit 0
       - name: Export Project
         run: |
           mkdir -v -p build/${{ matrix.platform }}
