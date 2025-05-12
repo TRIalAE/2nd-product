@@ -39,10 +39,13 @@ jobs:
         include:
           - os: ubuntu-latest
             platform: "linux"
+            extension: ""
           - os: macos-latest
             platform: "macos"
+            extension: ".zip"
           - os: windows-latest
             platform: "windows"
+            extension: ".exe"
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: true
       DOTNET_NOLOGO: true
@@ -68,6 +71,9 @@ jobs:
         run: |
           dotnet --version
           godot --version
+      - name: Initial Project Setup
+        run: |
+          godot --headless --editor --quit
       - name: Generate .NET Bindings
         run: godot --headless --build-solutions --quit || exit 0
       - name: Build Projects
@@ -77,7 +83,7 @@ jobs:
           mkdir -v -p build/${{ matrix.platform }}
           EXPORT_DIR="${{ github.workspace }}/build/${{ matrix.platform }}"
           cd $PROJECT_PATH
-          godot --headless --export-release "${{ matrix.platform }}" "${EXPORT_DIR}/${EXPORT_NAME}.exe"
+          godot --headless --export-release "${{ matrix.platform }}" "${EXPORT_DIR}/${EXPORT_NAME}${{ matrix.extension }}"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
