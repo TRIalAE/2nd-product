@@ -92,5 +92,5 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.platform }}-${{ github.head_ref || github.ref_name }}
+          name: ${{ matrix.platform }}
           path: build/${{ matrix.platform }}
