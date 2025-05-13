@@ -113,9 +113,9 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const artifact_url_linux = needs.export.outputs.linux-artifact-url;
-            const artifact_url_macos = needs.export.outputs.macos-artifact-url;
-            const artifact_url_windows = needs.export.outputs.windows-artifact-url;
+            const artifact_url_linux = "${{ needs.export.outputs.linux-artifact-url }}";
+            const artifact_url_macos = "${{ needs.export.outputs.macos-artifact-url }}";
+            const artifact_url_windows = "${{ needs.export.outputs.windows-artifact-url }}";
 
             const issue_number = context.issue.number;
             const repo = context.repo;
@@ -124,10 +124,9 @@ jobs:
               return;
             }
 
-            const title = `## ✅ Build Artifacts 😍`
+            const title = '## ✅ Build Artifacts 😍'
 
-            const comment = `
-              ${title}
+            const comment = `${title}
 
               | Build Name | Download Link |
               | --- | --- |
