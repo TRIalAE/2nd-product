@@ -20,6 +20,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 env:
   GODOT_VERSION: 4.4
@@ -50,6 +51,10 @@ jobs:
             extension: ".zip"
           - platform: "windows"
             extension: ".exe"
+    outputs:
+      linux-artifact-url: ${{ steps.upload-linux.outputs.artifact-url }}
+      macos-artifact-url: ${{ steps.upload-macos.outputs.artifact-url }}
+      windows-artifact-url: ${{ steps.upload-windows.outputs.artifact-url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -78,7 +83,64 @@ jobs:
           godot --headless --export-release "${{ matrix.platform }}" "${EXPORT_DIR}/${EXPORT_NAME}${{ matrix.extension }}"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
+        id: upload-${{ matrix.platform }}
         with:
           name: ${{ matrix.platform }}
           path: build/${{ matrix.platform }}
           if-no-files-found: error
+
+  pr-comment:
+    name: PR Comment
+    needs: export
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const artifact_url_linux = needs.export.outputs.linux-artifact-url;
+            const artifact_url_macos = needs.export.outputs.macos-artifact-url;
+            const artifact_url_windows = needs.export.outputs.windows-artifact-url;
+
+            const issue_number = context.issue.number;
+            const repo = context.repo;
+
+            if(!issue_number) {
+              return;
+            }
+
+            const title = `## ✅ Build Artifacts 😍`
+
+            const comment = `
+              ${title}
+
+              | Build Name | Download Link |
+              | --- | --- |
+              | 🐧 Linux | [Download](${artifact_url_linux}) |
+              | 🍏 MacOS | [Download](${artifact_url_macos}) |
+              | 🪟 Windows | [Download](${artifact_url_windows}) |
+            `;
+
+            const comments = await github.rest.issues.listComments({
+              owner: repo.owner,
+              repo: repo.repo,
+              issue_number: issue_number
+            });
+
+            const existingComment = comments.data.find(comment => comment.body.includes(title));
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: repo.owner,
+                repo: repo.repo,
+                comment_id: existingComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: repo.owner,
+                repo: repo.repo,
+                issue_number: issue_number,
+                body: comment
+              });
+            }
