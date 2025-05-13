@@ -52,9 +52,9 @@ jobs:
           - platform: "windows"
             extension: ".exe"
     outputs:
-      linux-artifact-url: ${{ steps.upload-linux.outputs.artifact-url }}
-      macos-artifact-url: ${{ steps.upload-macos.outputs.artifact-url }}
-      windows-artifact-url: ${{ steps.upload-windows.outputs.artifact-url }}
+      linux-artifact-url: ${{ steps.upload-artifact-linux.outputs.artifact-url }}
+      macos-artifact-url: ${{ steps.upload-artifact-macos.outputs.artifact-url }}
+      windows-artifact-url: ${{ steps.upload-artifact-windows.outputs.artifact-url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -81,13 +81,27 @@ jobs:
           EXPORT_DIR="build/${{ matrix.platform }}"
           mkdir -v -p "${EXPORT_DIR}"
           godot --headless --export-release "${{ matrix.platform }}" "${EXPORT_DIR}/${EXPORT_NAME}${{ matrix.extension }}"
-      - name: Upload Artifact
+      - name: Upload Artifact linux
         uses: actions/upload-artifact@v4
-        id: upload-${{ matrix.platform }}
+        id: upload-artifact-linux
+        if: matrix.platform == 'linux'
         with:
           name: ${{ matrix.platform }}
           path: build/${{ matrix.platform }}
-          if-no-files-found: error
+      - name: Upload Artifact macos
+        uses: actions/upload-artifact@v4
+        id: upload-artifact-macos
+        if: matrix.platform == 'macos'
+        with:
+          name: ${{ matrix.platform }}
+          path: build/${{ matrix.platform }}
+      - name: Upload Artifact windows
+        uses: actions/upload-artifact@v4
+        id: upload-artifact-windows
+        if: matrix.platform == 'windows'
+        with:
+          name: ${{ matrix.platform }}
+          path: build/${{ matrix.platform }}
 
   pr-comment:
     name: PR Comment
