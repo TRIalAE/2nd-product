@@ -8,28 +8,35 @@ permissions:
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
+    paths:
+      - "**.cs"
+      - "**.sln"
+      - "**.csproj"
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+    paths:
+      - "**.cs"
+      - "**.sln"
+      - "**.csproj"
 
 jobs:
-  build:
-
+  format:
+    name: Format
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Format
-      run: |
-        SLN_FILE=$(find . -name '*.sln' -print -quit)
-        if [ -z "$SLN_FILE" ]; then
-          echo "Solution file not found"
-          exit 1
-        fi
-        dotnet format "$SLN_FILE" --verify-no-changes --verbosity diagnostic
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Format
+        run: |
+          SLN_FILE=$(find . -name '*.sln' -print -quit)
+          if [ -z "$SLN_FILE" ]; then
+            echo "Solution file not found"
+            exit 1
+          fi
+          dotnet format "$SLN_FILE" --verify-no-changes --verbosity diagnostic
