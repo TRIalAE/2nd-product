@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://du1wa5csdpnk0"]
+[gd_scene load_steps=5 format=3 uid="uid://du1wa5csdpnk0"]
 
 [ext_resource type="Texture2D" uid="uid://cqmgs4ay85t7a" path="res://assets/player/player_base_sample.png" id="1_d6veg"]
 [ext_resource type="Script" uid="uid://d0ds4hgstwhuu" path="res://src/Player.cs" id="1_h6syq"]
+[ext_resource type="PackedScene" uid="uid://dm78bpyni5k7r" path="res://assets/bullet/player/bullet.tscn" id="3_q8aid"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_d6veg"]
 size = Vector2(130, 70)
@@ -9,6 +10,9 @@ size = Vector2(130, 70)
 [node name="Player" type="Area2D"]
 script = ExtResource("1_h6syq")
 Speed = 200.0
+BulletScene = ExtResource("3_q8aid")
+FireCooldown = 0.2
+BulletOffset = Vector2(75, 7)
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(5, 5)
