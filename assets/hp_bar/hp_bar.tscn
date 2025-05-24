@@ -1,0 +1,21 @@
+[gd_scene load_steps=5 format=3 uid="uid://bjkq5gcixb7ae"]
+
+[ext_resource type="Texture2D" uid="uid://dac7dpyc2gsr1" path="res://assets/hp_bar/hp_bar_base.png" id="1_ig5ty"]
+[ext_resource type="Script" uid="uid://biilpf5dss81q" path="res://src/HpBar.cs" id="1_mc7db"]
+[ext_resource type="Texture2D" uid="uid://cep8svio1runl" path="res://assets/hp_bar/hp_bar_over.png" id="2_mc7db"]
+[ext_resource type="Texture2D" uid="uid://5vksjdj4v65l" path="res://assets/hp_bar/hp_bar_content.png" id="3_eg02v"]
+
+[node name="HPBar" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_mc7db")
+
+[node name="TextureProgressBar" type="TextureProgressBar" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture_under = ExtResource("1_ig5ty")
+texture_over = ExtResource("2_mc7db")
+texture_progress = ExtResource("3_eg02v")
