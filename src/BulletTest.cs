@@ -21,7 +21,7 @@ public class BulletTest
 	public void Direction_ShouldBeNormalized_WhenSet()
 	{
 		// GIVEN
-		var bullet = new Bullet();
+		var bullet = AutoFree(new Bullet());
 
 		// WHEN
 		bullet.Direction = new Vector2(10f, 0f); // Right direction
@@ -34,7 +34,7 @@ public class BulletTest
 	public void Process_ShouldUpdatePosition()
 	{
 		// GIVEN
-		var bullet = new Bullet();
+		var bullet = AutoFree(new Bullet());
 		bullet.Position = Vector2.Zero;
 		bullet.Speed = 200f;
 		bullet.Direction = Vector2.Right;
@@ -50,7 +50,7 @@ public class BulletTest
 	public void Process_ShouldMoveInDirectionOfVector()
 	{
 		// GIVEN
-		var bullet = new Bullet();
+		var bullet = AutoFree(new Bullet());
 		bullet.Position = Vector2.Zero;
 		bullet.Speed = 200f;
 		bullet.Direction = new Vector2(0f, 1f); // Downward direction
