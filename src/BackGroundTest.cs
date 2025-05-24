@@ -14,7 +14,7 @@ public class BackGroundTest
 	public void Process_ShouldUpdatePosition()
 	{
 		// GIVEN
-		var background = new BackGround();
+		var background = AutoFree(new BackGround());
 		background.ScrollOffset = Vector2.Zero;
 		background.ScrollSpeed = 200f;
 
