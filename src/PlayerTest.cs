@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Player;
 using static Assertions;
 using static Utils;
+using Bullet;
 
 [TestSuite]
 public class PlayerTest
@@ -92,5 +93,25 @@ public class PlayerTest
 
 		// 最後にキーを離す
 		_sceneRunner.SimulateActionRelease("player_down");
+	}
+
+	[TestCase]
+	public void ResetsCooldown_AfterShooting()
+	{
+		// GIVEN
+		var player = _sceneRunner.Scene() as Player;
+		player.Position = Vector2.Zero;
+		player.FireCooldown = 0.5;
+
+		player.TimeSinceLastShot = 10.0;
+
+		// WHEN
+		_sceneRunner.SimulateActionPress("shoot");
+		player._Process(0.5);
+		_sceneRunner.SimulateActionRelease("shoot");
+
+		// THEN
+		AssertFloat(player.TimeSinceLastShot).IsEqual(0.0);
+		AssertInt(player.GetChildren().Count).IsGreaterEqual(1);
 	}
 }

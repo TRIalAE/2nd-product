@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://dcn87leju0svr" path="res://src/Bullet.cs" id="1_ot20a"]
 
 [node name="Bullet" type="Node2D"]
+scale = Vector2(2, 2)
 script = ExtResource("1_ot20a")
 Speed = 700.0
 
