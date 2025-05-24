@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="SecondProduct"
+config/name="second_product"
 run/main_scene="uid://dg3u8x28mq5gx"
 config/features=PackedStringArray("4.4", "C#", "GL Compatibility")
 config/icon="res://icon.svg"
@@ -22,7 +22,7 @@ window/size/viewport_height=768
 
 [dotnet]
 
-project/assembly_name="SecondProduct"
+project/assembly_name="second_product"
 
 [editor_plugins]
 
