@@ -10,6 +10,13 @@ using static Utils;
 [TestSuite]
 public class BulletTest
 {
+	private ISceneRunner _sceneRunner;
+	[BeforeTest]
+	public void SetUp()
+	{
+		_sceneRunner = ISceneRunner.Load("res://assets/bullet/player/bullet.tscn");
+	}
+
 	[TestCase]
 	public void Direction_ShouldBeNormalized_WhenSet()
 	{
@@ -53,5 +60,25 @@ public class BulletTest
 
 		// THEN
 		AssertVector(bullet.Position).IsEqual(new Vector2(0f, 200f));
+	}
+
+	[TestCase]
+	public void Ready_ShouldPlaySpecificAudio_WhenCalled()
+	{
+		// GIVEN
+		var bullet = _sceneRunner.Scene() as Bullet;
+		var audioStream = GD.Load<AudioStream>("res://assets/bullet/player/bullet_shotA.wav");
+		bullet.SoundEffect = audioStream;
+
+		// WHEN
+		bullet._Ready();
+
+		// THEN
+		var node = bullet as Node;
+		var audioPlayer = node.GetNode<AudioStreamPlayer2D>("AudioStreamPlayer2D");
+		AssertThat(audioPlayer).IsNotNull();
+		AssertThat(audioPlayer.Playing).IsTrue();
+		AssertThat(audioPlayer.Stream).IsNotNull();
+		AssertThat(audioPlayer.Stream.ResourcePath).IsEqual("res://assets/bullet/player/bullet_shotA.wav");
 	}
 }
