@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://dm78bpyni5k7r"]
+
+[ext_resource type="Texture2D" uid="uid://b77bw46w7gx48" path="res://assets/bullet/player/bullet.png" id="1_g0pwv"]
+[ext_resource type="Script" uid="uid://dcn87leju0svr" path="res://src/Bullet.cs" id="1_ot20a"]
+[ext_resource type="AudioStream" uid="uid://ba5oqxbp14ngt" path="res://assets/bullet/player/bullet_shotA.wav" id="2_2dbyp"]
+
+[node name="Bullet" type="Node2D"]
+scale = Vector2(2, 2)
+script = ExtResource("1_ot20a")
+Speed = 700.0
+SoundEffect = ExtResource("2_2dbyp")
+
+[node name="Bullet" type="Sprite2D" parent="."]
+texture = ExtResource("1_g0pwv")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
