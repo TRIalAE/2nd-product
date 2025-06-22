@@ -7,45 +7,45 @@ using System.Linq;
 
 public partial class EnemySpawner : Node2D
 {
-    [ExportGroup("出現設定")]
-    [Export]
-    public double SpawnAttemptInterval { get; set; } = 1.0; // 敵機出現試行間隔（秒）
+	[ExportGroup("出現設定")]
+	[Export]
+	public double SpawnAttemptInterval { get; set; } = 1.0; // 敵機出現試行間隔（秒）
 
-    [Export(PropertyHint.Range, "0.0,1.0")]
-    public double SpawnAttemptProbability { get; set; } = 0.5; // 敵機出現試行確率（0.0 から 1.0 の範囲）
+	[Export(PropertyHint.Range, "0.0,1.0")]
+	public double SpawnAttemptProbability { get; set; } = 0.5; // 敵機出現試行確率（0.0 から 1.0 の範囲）
 
-    [ExportGroup("コスト管理")]
-    [Export]
-    public int MaxSpawnCostPerPhase { get; set; } = 10; // フェーズごとの最大出現コスト
+	[ExportGroup("コスト管理")]
+	[Export]
+	public int MaxSpawnCostPerPhase { get; set; } = 10; // フェーズごとの最大出現コスト
 
-    [ExportGroup("フェーズ設定")]
-    [Export]
-    public SpawnPerPhaseData CurrentSpawnPerPhaseData { get; set; } // 現在のフェーズデータ
+	[ExportGroup("フェーズ設定")]
+	[Export]
+	public SpawnPerPhaseData CurrentSpawnPerPhaseData { get; set; } // 現在のフェーズデータ
 
-    private int _currentSpawnCost = 0;
+	private int _currentSpawnCost = 0;
 
 	/// <summary>
-    /// GdUnit4でのテスト用に、現在のコストを外部から取得できるようにするメソッド。
-    /// </summary>
-    public int GetCurrentCost() { return _currentSpawnCost; }
-    private RandomNumberGenerator _rng = new RandomNumberGenerator();
+	/// GdUnit4でのテスト用に、現在のコストを外部から取得できるようにするメソッド。
+	/// </summary>
+	public int GetCurrentCost() { return _currentSpawnCost; }
+	private RandomNumberGenerator _rng = new RandomNumberGenerator();
 
-    public override void _Ready()
-    {
-        var timer = new Timer();
-        timer.WaitTime = SpawnAttemptInterval;
-        timer.Timeout += OnSpawnTimerTimeout;
-        AddChild(timer);
-        timer.Start();
-    }
+	public override void _Ready()
+	{
+		var timer = new Timer();
+		timer.WaitTime = SpawnAttemptInterval;
+		timer.Timeout += OnSpawnTimerTimeout;
+		AddChild(timer);
+		timer.Start();
+	}
 
-    private void OnSpawnTimerTimeout()
-    {
-        if (_rng.Randf() < SpawnAttemptProbability)
-        {
-            TrySpawnEnemy();
-        }
-    }
+	private void OnSpawnTimerTimeout()
+	{
+		if (_rng.Randf() < SpawnAttemptProbability)
+		{
+			TrySpawnEnemy();
+		}
+	}
 
 	/// <summary>
 	/// 敵機を出現させる試行を行う。
@@ -130,5 +130,5 @@ public partial class EnemySpawner : Node2D
 	{
 		_currentSpawnCost -= cost;
 		GD.Print($"Enemy destroyed, current cost: {GetCurrentCost()}");
-    }
+	}
 }
