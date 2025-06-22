@@ -27,7 +27,7 @@ public partial class EnemySpawner : Node2D
 	/// <summary>
     /// GdUnit4でのテスト用に、現在のコストを外部から取得できるようにするメソッド。
     /// </summary>
-    public int GetCurrentCost() => _currentSpawnCost;
+    public int GetCurrentCost() { return _currentSpawnCost; }
     private RandomNumberGenerator _rng = new RandomNumberGenerator();
 
     public override void _Ready()
@@ -109,27 +109,26 @@ public partial class EnemySpawner : Node2D
 
 		var newEnemy = entry.EnemyScene.Instantiate<Area2D>();
 
-		// (出現位置の決定ロジックは変更なし)
+		// 出現位置を画面外のランダムな位置に設定
+		// 画面の右端から50ピクセル外に出現させる
+		// Y座標は画面の高さに基づいてランダムに設定する
 		var viewportRect = GetViewportRect();
 		var spawnPosition = new Vector2();
-		var side = _rng.RandiRange(0, 3);
-		switch (side)
-		{
-			case 0: spawnPosition.X = _rng.RandfRange(0, viewportRect.Size.X); spawnPosition.Y = -50; break;
-			case 1: spawnPosition.X = viewportRect.Size.X + 50; spawnPosition.Y = _rng.RandfRange(0, viewportRect.Size.Y); break;
-			case 2: spawnPosition.X = _rng.RandfRange(0, viewportRect.Size.X); spawnPosition.Y = viewportRect.Size.Y + 50; break;
-			case 3: spawnPosition.X = -50; spawnPosition.Y = _rng.RandfRange(0, viewportRect.Size.Y); break;
-		}
+		spawnPosition.X = viewportRect.Size.X + 50;
+		spawnPosition.Y = _rng.RandfRange(0, viewportRect.Size.Y);
 		newEnemy.Position = spawnPosition;
 
 		newEnemy.TreeExiting += () => OnEnemyDestroyed(entry.Cost);
 
 		GetParent().AddChild(newEnemy);
 		_currentSpawnCost += entry.Cost;
+
+		GD.Print($"Enemy spawned: {entry.EnemyScene.ResourceName}, cost: {entry.Cost}, current total cost: {GetCurrentCost()}");
 	}
 
-    private void OnEnemyDestroyed(int cost)
-    {
-        _currentSpawnCost -= cost;
+	private void OnEnemyDestroyed(int cost)
+	{
+		_currentSpawnCost -= cost;
+		GD.Print($"Enemy destroyed, current cost: {GetCurrentCost()}");
     }
 }
