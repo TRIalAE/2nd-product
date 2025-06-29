@@ -233,7 +233,7 @@ public class EnemySpawnerTest
 
 		AssertThat(spawnedEnemiesAfter - spawnedEnemiesBefore).IsEqual(1);
 		AssertThat(costAfter - costBefore).IsEqual(3); // コストが3減っていること
-	}	
+	}
 
 	// helpers
 	private int GetEnemyCount()
