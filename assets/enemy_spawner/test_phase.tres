@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SpawnPerPhaseData" load_steps=5 format=3 uid="uid://uqj4lxlpu0s2"]
+
+[ext_resource type="PackedScene" uid="uid://b5ug3x6fdxu60" path="res://assets/enemy_spawner/test/test_enemy.tscn" id="1_oxtc4"]
+[ext_resource type="Script" uid="uid://u6s3i50xcc45" path="res://src/EnemySpawnEntry.cs" id="1_rgcra"]
+[ext_resource type="Script" uid="uid://bjiy8wb881y02" path="res://src/SpawnPerPhaseData.cs" id="1_ui27i"]
+
+[sub_resource type="Resource" id="Resource_oxtc4"]
+script = ExtResource("1_rgcra")
+EnemyScene = ExtResource("1_oxtc4")
+Rate = 1.0
+Cost = 1
+metadata/_custom_type_script = "uid://u6s3i50xcc45"
+
+[resource]
+script = ExtResource("1_ui27i")
+SpawnTable = Array[Object]([SubResource("Resource_oxtc4")])
+metadata/_custom_type_script = "uid://bjiy8wb881y02"
