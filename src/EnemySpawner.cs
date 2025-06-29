@@ -52,12 +52,13 @@ public partial class EnemySpawner : Node2D
 	/// 現在のフェーズデータに基づいて出現可能な敵を選び、
 	/// 重み付き抽選で1体を選択して出現させる。
 	/// </summary>
+	/// <param name="fixedRandomValue">テスト用の固定ランダム値。nullの場合はランダムに選択。</param>
 	/// <remarks>
 	/// 出現コストが最大値に達している場合は何もしない。
 	/// 出現可能な敵がいない場合も何もしない。
 	/// </remarks>
 	/// <returns>なし</returns>
-	private void TrySpawnEnemy()
+	public void TrySpawnEnemy(float? fixedRandomValue = null)
 	{
 		// 現在のフェーズデータが設定されていなければ何もしない
 		if (CurrentSpawnPerPhaseData == null || CurrentSpawnPerPhaseData.SpawnTable == null)
@@ -79,15 +80,24 @@ public partial class EnemySpawner : Node2D
 		var totalRate = availableEnemies.Sum(entry => entry.Rate);
 		var randomValue = _rng.Randf() * totalRate;
 
+		// テスト用に固定のランダム値が指定されている場合はそれを使用
+		// 0からtotalRateの範囲に収める
+		if (fixedRandomValue.HasValue)
+		{
+			randomValue = Mathf.Clamp(fixedRandomValue.Value, 0, totalRate);
+		}
+
 		EnemySpawnEntry selectedEntry = null;
+
+		float cumulativeRate = 0.0f;
 		foreach (var entry in availableEnemies)
 		{
-			if (randomValue < entry.Rate)
+			cumulativeRate += entry.Rate;
+			if (randomValue <= cumulativeRate)
 			{
 				selectedEntry = entry;
 				break;
 			}
-			randomValue -= entry.Rate;
 		}
 
 		if (selectedEntry != null)

@@ -141,18 +141,99 @@ public class EnemySpawnerTest
 
 		var enemyInstance = _spawner.GetParent().GetChildren().FirstOrDefault(node => node is Area2D) as Area2D;
 
+		// Act (実行)
 		if (enemyInstance != null)
 		{
 			enemyInstance.QueueFree(); // 敵機を削除
 			await Task.Delay(100); // 少し待機して削除が反映されるのを待つ
 		}
 
+		// Assert (検証)
 		var spawnedEnemiesAfter = GetEnemyCount();
 		var costAfter = _spawner.GetCurrentCost();
 
 		AssertThat(spawnedEnemiesAfter).IsEqual(spawnedEnemiesBefore - 1);
-		AssertThat(costAfter).IsNotEqual(costBefore); // コストが減少していること
+		AssertThat(costAfter).IsLess(costBefore); // コストが減少していること
 	}
+
+	[TestCase]
+	// 抽選で適切な敵が選ばれるかを確認するテスト
+	public async Task Spawn_WhenMultipleEnemiesAvailable_ShouldSelectBasedOnRate()
+	{
+		// Arrange (準備)
+		_spawner.SpawnAttemptProbability = 0.0; // 確率0%にして自動的なスポーンを防ぐ
+		_spawner.MaxSpawnCostPerPhase = 10;
+
+		// コストが1, 2, 3の敵を用意することで、コストの減少量でどの敵が選ばれたかを判別できるようにする
+		_spawner.CurrentSpawnPerPhaseData = new SpawnPerPhaseData
+		{
+			SpawnTable = new Array<EnemySpawnEntry>
+			{
+				new EnemySpawnEntry { EnemyScene = _dummyEnemyScene, Cost = 1, Rate = 1.0f },
+				new EnemySpawnEntry { EnemyScene = _dummyEnemyScene, Cost = 2, Rate = 1.0f },
+				new EnemySpawnEntry { EnemyScene = _dummyEnemyScene, Cost = 3, Rate = 1.0f }
+			}
+		};
+
+		// 現在出現している敵を全て削除
+		foreach (var enemy in _spawner.GetParent().GetChildren().OfType<Area2D>())
+		{
+			enemy.QueueFree();
+		}
+
+		await Task.Delay(100); // 少し待機して削除が反映されるのを待つ
+
+		var spawnedEnemiesBefore = GetEnemyCount();
+		var costBefore = _spawner.GetCurrentCost();
+
+		// Act (実行)
+		// ここではランダム値を固定して、特定の敵が選ばれることを確認する
+		// 1.0f以下のランダム値を使用すると、最初の敵が選ばれる
+		_spawner.TrySpawnEnemy(1.0f);
+
+		await Task.Delay(100); // 少し待機してスポーンが反映されるのを待つ
+
+		// Assert (検証)
+		var spawnedEnemies = _spawner.GetParent().GetChildren().OfType<Area2D>().ToList();
+		var spawnedEnemiesAfter = GetEnemyCount();
+		var costAfter = _spawner.GetCurrentCost();
+
+		AssertThat(spawnedEnemiesAfter - spawnedEnemiesBefore).IsEqual(1);
+		AssertThat(costAfter - costBefore).IsEqual(1); // コストが1減っていること
+
+		spawnedEnemiesBefore = spawnedEnemiesAfter;
+		costBefore = costAfter;
+
+		// Act (実行) - 追加の敵をスポーンして、選ばれる敵が正しいか確認
+		// ここではランダム値を2.0fに設定して、2番目の敵が選ばれることを確認する
+		_spawner.TrySpawnEnemy(2.0f);
+
+		await Task.Delay(100); // 少し待機してスポーンが反映されるのを待つ
+
+		// Assert (検証)
+		spawnedEnemiesAfter = GetEnemyCount();
+		costAfter = _spawner.GetCurrentCost();
+		spawnedEnemies = _spawner.GetParent().GetChildren().OfType<Area2D>().ToList();
+
+		AssertThat(spawnedEnemiesAfter - spawnedEnemiesBefore).IsEqual(1);
+		AssertThat(costAfter - costBefore).IsEqual(2); // コストが2減っていること
+
+		spawnedEnemiesBefore = spawnedEnemiesAfter;
+		costBefore = costAfter;
+
+		// Act (実行) - さらに3番目の敵をスポーンして、選ばれる敵が正しいか確認
+		_spawner.TrySpawnEnemy(3.0f);
+
+		await Task.Delay(100); // 少し待機してスポーンが反映されるのを待つ
+
+		// Assert (検証)
+		spawnedEnemiesAfter = GetEnemyCount();
+		costAfter = _spawner.GetCurrentCost();
+		spawnedEnemies = _spawner.GetParent().GetChildren().OfType<Area2D>().ToList();
+
+		AssertThat(spawnedEnemiesAfter - spawnedEnemiesBefore).IsEqual(1);
+		AssertThat(costAfter - costBefore).IsEqual(3); // コストが3減っていること
+	}	
 
 	// helpers
 	private int GetEnemyCount()
