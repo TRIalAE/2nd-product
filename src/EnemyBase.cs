@@ -11,7 +11,7 @@ public partial class EnemyBase : Node
 
 	[Export]
 	public int score { get; set; }
-		
+
 	protected HpNode hpNode;
 
 	public override void _Ready()

@@ -22,7 +22,7 @@ public partial class EnemyBaseTest
 			DefeatedCalled = true;
 			EmitSignal(SignalName.Defeated, score);
 		}
-		
+
 	}
 
 	[TestCase]
