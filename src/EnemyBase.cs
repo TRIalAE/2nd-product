@@ -6,6 +6,9 @@ using System;
 
 public partial class EnemyBase : Node
 {
+    [Signal]
+    public delegate void DefeatedEventHandler(int score);
+
     [Export]
     public int score { get; set; }
     
@@ -16,34 +19,19 @@ public partial class EnemyBase : Node
         hpNode = GetNode<HpNode>("HpNode");
 
         if (hpNode != null)
-            hpNode.Connect(HpNode.SignalName.HpChanged, new Callable(this, nameof(OnHpChanged)));
+            hpNode.Connect(HpNode.SignalName.HpChanged, new Callable(this, nameof(OnEnemyHpChanged)));
     }
 
-    public void OnHpChanged(int currentHp, int maxHp)
+    public void OnEnemyHpChanged(int currentHp, int maxHp)
     {
         if (currentHp <= 0)
             Defeat(score);
     }
 
-
-
-    public void Defeat(int score)
+    public virtual void Defeat(int score)
     {
-        GD.Print(score);
-        // スコア増加処理が入る？
+        GD.Print($"撃破されました: {score}");
+        QueueFree();
+        // スコア増加処理が入る（別issueと結合）
     }
 }
-
-
-/* AddScore（Player）
- * ↑
- * Defeat（Enemyの基底クラス）
- * ↑
- * OnDefeat（Enemyの派生クラス）
- * ↑
- * OnEnemyHpChanged
- * ↑
- * OnHit（HpNode）
- * ↑
- * 何かがこれを呼ぶ？
- */

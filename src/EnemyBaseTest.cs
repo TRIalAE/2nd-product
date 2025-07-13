@@ -3,60 +3,88 @@ using GdUnit4;
 
 namespace EnemyTest;
 
-using System.Threading.Tasks;
-using HpNode;
 using Enemy;
+using HpNode;
+using System.Threading.Tasks;
 using static Assertions;
 
 [TestSuite]
 public partial class EnemyBaseTest
 {
-    // テスト用のシグナルを発行するクラス
-    private sealed partial class TestEmitter : Node
-    {[TestCase]
-public async Task OnHit_Test()
-{
-	// GIVEN
-	var hpNode = AutoFree(new HpNode());
-	hpNode.MaxHp = 100;
-	hpNode._Ready(); // ここは Root.AddChild(...) でも可
+	// 仮想敵
+	private sealed partial class TestEnemy : EnemyBase
+	{
+		public bool DefeatedCalled { get; private set; } = false;
 
-	// シグナルを待機
-	var waitEmit = AssertSignal(hpNode).IsEmitted(HpNode.SignalName.HpChanged, 80, 100).WithTimeout(1000);
+		public override void Defeat(int score)
+		{
+			// 親クラスではQueueFreeしてるが、即時破棄するとシグナルの検証ができなくなるためオーバーライド
+			DefeatedCalled = true;
+			EmitSignal(SignalName.Defeated, score);
+		}
+		
+	}
 
-	// WHEN
-	hpNode.OnHit(20);
+	[TestCase]
+	public void Ready_ShouldConnectHpChangedSignal()
+	{
+		// GIVEN
+		var enemy = AutoFree(new EnemyBase());
+		var hp = AutoFree(new HpNode());
+		hp.Name = "HpNode";
+		enemy.AddChild(hp);
 
-	// THEN
-	AssertInt(hpNode.CurrentHp).IsEqual(80);
+		// WHEN
+		enemy._Ready();
 
-	await waitEmit;
-}
-        public delegate void HitEventHandler(int damage);
+		// THEN
+		AssertBool(hp.IsConnected("HpChanged", new Callable(enemy, nameof(enemy.OnEnemyHpChanged)))).IsTrue();
+	}
 
-        public void EmitHit(int damage)
-        {
-            EmitSignal(SignalName.Hit, damage);
-        }
-    }
+	[TestCase]
+	public void OnEnemyHpChanged_ShouldCallDefeat_WhenHpIsZero()
+	{
+		// GIVEN
+		var enemy = AutoFree(new TestEnemy());
+		var hp = AutoFree(new HpNode());
+		enemy.AddChild(hp);
+		enemy._Ready();
 
-    [TestCase]
-    public async Task OnHit_Test()
-    {
-        // GIVEN
-        var hpNode = AutoFree(new HpNode());
-        hpNode.MaxHp = 100;
-        hpNode._Ready(); // ここは Root.AddChild(...) でも可
+		// WHEN
+		enemy.OnEnemyHpChanged(0, 100);
 
-        // シグナルを待機
-        var waitEmit = AssertSignal(hpNode).IsEmitted(HpNode.SignalName.HpChanged, 80, 100).WithTimeout(1000);
+		// THEN
+		AssertBool(enemy.DefeatedCalled).IsTrue();
+	}
 
-        // WHEN
-        hpNode.OnHit(20);
+	[TestCase]
+	public async Task Defeat_ShouldEmitDefeatedSignal()
+	{
+		// GIVEN
+		var enemy = AutoFree(new TestEnemy());
+		enemy.score = 123;
 
-        // THEN
-        AssertInt(hpNode.CurrentHp).IsEqual(80);
+		// シグナルを待機
+		// 苦肉の策で文字列直渡し
+		var waitEmit = AssertSignal(enemy).IsEmitted("Defeated", 123).WithTimeout(1000);
 
-        await waitEmit;
-    }
+		// WHEN
+		enemy.Defeat(enemy.score);
+
+		// THEN
+		await waitEmit;
+	}
+
+	[TestCase]
+	public void Score_ShouldBeInheritedFromDerivedClass()
+	{
+		// GIVEN
+		var enemy = AutoFree(new EnemySample());
+
+		// WHEN
+		enemy._Ready();
+
+		// THEN
+		AssertInt(enemy.score).IsEqual(100);
+	}
 }
