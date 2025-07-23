@@ -20,6 +20,8 @@ public partial class EnemyBase : Node
 
 		if (hpNode != null)
 			hpNode.Connect(HpNode.SignalName.HpChanged, new Callable(this, nameof(OnEnemyHpChanged)));
+		else
+			throw new Exception("HpNodeが存在しません");
 	}
 
 	public void OnEnemyHpChanged(int currentHp, int maxHp)

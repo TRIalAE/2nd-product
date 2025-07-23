@@ -29,7 +29,7 @@ public partial class EnemyBaseTest
 	public void Ready_ShouldConnectHpChangedSignal()
 	{
 		// GIVEN
-		var enemy = AutoFree(new EnemyBase());
+		var enemy = AutoFree(new TestEnemy());
 		var hp = AutoFree(new HpNode());
 		hp.Name = "HpNode";
 		enemy.AddChild(hp);
@@ -41,16 +41,33 @@ public partial class EnemyBaseTest
 		AssertBool(hp.IsConnected("HpChanged", new Callable(enemy, nameof(enemy.OnEnemyHpChanged)))).IsTrue();
 	}
 
+	// [TestCase]
+	// // attributeでテストできるはずだがなぜ名前解決できない？？？？？？？
+	// [ThrowsException(typeof(Exception))]
+	// public void Ready_ShouldThrowException_WhenHpNodeIsMissing()
+	// {
+	// 	// GIVEN
+	// 	var enemy = AutoFree(new TestEnemy());
+
+	// 	// WHEN
+	// 	enemy._Ready();
+
+	// 	// WHEN THEN
+	// 	// こいつも名前解決できないのが原因。仕事しろ
+	// 	// AssertThat(() => enemy._Ready()).ThrowsException<Exception>();
+	// }
+
 	[TestCase]
 	public void OnEnemyHpChanged_ShouldCallDefeat_WhenHpIsZero()
 	{
 		// GIVEN
 		var enemy = AutoFree(new TestEnemy());
 		var hp = AutoFree(new HpNode());
+		hp.Name = "HpNode";
 		enemy.AddChild(hp);
-		enemy._Ready();
 
 		// WHEN
+		enemy._Ready();
 		enemy.OnEnemyHpChanged(0, 100);
 
 		// THEN
@@ -62,11 +79,14 @@ public partial class EnemyBaseTest
 	{
 		// GIVEN
 		var enemy = AutoFree(new TestEnemy());
+		var hp = AutoFree(new HpNode());
+		hp.Name = "HpNode";
+		enemy.AddChild(hp);
+
 		enemy.score = 123;
 
 		// シグナルを待機
-		// 苦肉の策で文字列直渡し
-		var waitEmit = AssertSignal(enemy).IsEmitted("Defeated", 123).WithTimeout(1000);
+		var waitEmit = AssertSignal(enemy).IsEmitted(EnemyBase.SignalName.Defeated, 123).WithTimeout(1000);
 
 		// WHEN
 		enemy.Defeat(enemy.score);
@@ -76,10 +96,14 @@ public partial class EnemyBaseTest
 	}
 
 	[TestCase]
+	// note: EnemySampleを削除する際にはこのテストも削除する
 	public void Score_ShouldBeInheritedFromDerivedClass()
 	{
 		// GIVEN
 		var enemy = AutoFree(new EnemySample());
+		var hp = AutoFree(new HpNode());
+		hp.Name = "HpNode";
+		enemy.AddChild(hp);
 
 		// WHEN
 		enemy._Ready();
